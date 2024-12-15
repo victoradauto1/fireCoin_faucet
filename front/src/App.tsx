@@ -1,16 +1,24 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import {mint} from './Web3Service'
-import {useState} from 'react';
+import { useState } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
+import { mint } from "./Web3Service";
 
 function App() {
-
   const [message, setMessage] = useState("");
+  const [captcha, setCaptcha] = useState("");
 
-  function onBtnClick(){
-    setMessage("Requesting your tokens... wait...")
-    mint()
-      .then((tx)=> setMessage("You tokens were sent. Tx: " + tx))
-      .catch( err => setMessage(err.response? err.response.data : err.message) );
+  function onBtnClick() {
+    setMessage("Requesting your tokens... wait...");
+    if (captcha) {
+      mint()
+        .then((tx) => setMessage(`Your tokens were sent to wallet ${localStorage.getItem("wallet")}. Tx:`  + tx))
+        .catch((err) =>
+          setMessage(err.response ? err.response.data : err.message)
+        );
+      setCaptcha("");
+    } else {
+      setMessage("Prove that you are not a robot.");
+    }
   }
 
   return (
@@ -45,12 +53,22 @@ function App() {
           <p className="lead">
             <a
               href="#"
-              onClick={()=>onBtnClick()}
+              onClick={() => onBtnClick()}
               className="btn btn-lg btn-light fw-bold border-white bg-white"
             >
-              <img src="/assets/MetaMask_Fox.svg.png" alt="MetaMask Logo" width={48} />
+              <img
+                src="/assets/MetaMask_Fox.svg.png"
+                alt="MetaMask Logo"
+                width={48}
+              />
               Get my tokens!
             </a>
+            <div style={{ display: "inline-flex" }}>
+              <ReCAPTCHA
+                sitekey={`${process.env.REACT_APP_RECAPTCHA_KEY}`}
+                onChange={(value) => setCaptcha(value || "")}
+              />
+            </div>
           </p>
           {message}
         </div>
@@ -59,11 +77,14 @@ function App() {
       {/* Rodapé no final */}
       <footer className="text-white-50 text-center p-3">
         <p>
-          Built by {" "}
-          <a href="https://www.linkedin.com/in/victor-silva-073b60267/" className="text-white">
+          Built by{" "}
+          <a
+            href="https://www.linkedin.com/in/victor-silva-073b60267/"
+            className="text-white"
+          >
             Victor Silva
           </a>
-          , available at {" "}
+          , available at{" "}
           <a href="https://github.com/victoradauto1" className="text-white">
             @victoradauto1
           </a>
